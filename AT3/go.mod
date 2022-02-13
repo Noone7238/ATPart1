@@ -1,4 +1,4 @@
-module AT3
+module gitstuff/AT3
 
 go 1.17
 

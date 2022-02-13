@@ -1,7 +1,7 @@
 package main
 
 import (
-	"AT3/network"
+	"gitstuff/AT3/network"
 	"net/http"
 	"net/http/httptest"
 	"strings"
