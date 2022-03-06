@@ -18,19 +18,19 @@ func (ih *ItemHandler) GetItem(c echo.Context) error {
 	//capture id parameter
 	pID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		//log
 		return err
 	}
-	//check if id is in the map
-	p, ok := ih.items[pID]
-	if !ok {
-		return c.JSON(http.StatusNotFound, "item not found")
+
+	if ih.IsValidID(pID) {
+		return c.JSON(http.StatusNotFound, "item out of range")
 	}
 
 	//must of found it, print time
-	return c.JSON(http.StatusOK, p)
+	return c.JSON(http.StatusOK, ih.items[pID])
 }
 
-//post method, partial update, with ID
+//post method, partial update
 func (ih *ItemHandler) CreateItem(c echo.Context) error {
 	//make the struct for capturing the body of request, also maps out expected json input
 	type body struct {
@@ -44,23 +44,23 @@ func (ih *ItemHandler) CreateItem(c echo.Context) error {
 	//Other way to do validator, using echo
 	ih.e.Validator = structures.NewSampValidator()
 	if err := c.Bind(&reqBody); err != nil {
+		//log
 		return err
 	}
 
 	//Alternate validator this is using echo's validator
 	if err := c.Validate(reqBody); err != nil {
+		//log
 		return err
 	}
 
 	//add to end of list, make sure not to overwrite anything
-	i := ih.FindValidID()
 	item := structures.Item{
 		Name:        reqBody.Name,
 		Description: reqBody.Description,
-		ID:          i,
 	}
 
-	ih.items[i] = item
+	ih.items = append(ih.items, item)
 
 	return c.JSON(http.StatusOK, item)
 }
@@ -70,13 +70,13 @@ func (ih *ItemHandler) UpdateItem(c echo.Context) error {
 	//make sure we can capture the ID
 	pID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		//log
 		return err
 	}
 
-	//make sure ID is in map
-	_, ok := ih.items[pID]
-	if !ok {
-		return c.JSON(http.StatusNotFound, "item not found")
+	if ih.IsValidID(pID) {
+		//log
+		return c.JSON(http.StatusNotFound, "item out of range")
 	}
 
 	//Since it's been found, validate new data is ok.
@@ -86,41 +86,29 @@ func (ih *ItemHandler) UpdateItem(c echo.Context) error {
 		Description string `json:"description" validate:"omitempty,min=3"`
 	}
 
-	//bind it into your reqBody, if there is err yeet it
+	//bind it into your reqBody
 	var reqBody body
 	//Other way to do validator, using echo
 	ih.e.Validator = structures.NewSampValidator()
 	if err := c.Bind(&reqBody); err != nil {
+		//log
 		return err
 	}
 	if err := c.Validate(reqBody); err != nil {
+		//log
 		return err
 	}
 
 	//Extra validation, only override what was put in
-	var n string
-	if reqBody.Name == "" {
-		n = ih.items[pID].Name
-	} else {
-		n = reqBody.Name
+	if reqBody.Name != "" {
+		ih.items[pID].Name = reqBody.Name
 	}
 
-	var d string
-	if reqBody.Description == "" {
-		d = ih.items[pID].Description
-	} else {
-		d = reqBody.Description
+	if reqBody.Description != "" {
+		ih.items[pID].Description = reqBody.Description
 	}
 
-	//if we are this far, pop the item into the map and override old values
-	item := structures.Item{
-		Name:        n,
-		Description: d,
-		ID:          pID,
-	}
-
-	ih.items[pID] = item
-	return c.JSON(http.StatusOK, item)
+	return c.JSON(http.StatusOK, ih.items[pID])
 }
 
 //delete method, remove a item
@@ -128,15 +116,16 @@ func (ih *ItemHandler) DeleteItem(c echo.Context) error {
 	//make sure we can capture the ID
 	pID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		//log
 		return err
 	}
 
-	//make sure ID is in map
-	_, ok := ih.items[pID]
-	if !ok {
-		return c.JSON(http.StatusNotFound, "item not found")
+	//make sure ID is in slice
+	if ih.IsValidID(pID) {
+		//log
+		return c.JSON(http.StatusNotFound, "item out of range")
 	}
 
-	delete(ih.items, pID)
+	ih.Remove(pID)
 	return c.JSON(http.StatusOK, ih.items)
 }

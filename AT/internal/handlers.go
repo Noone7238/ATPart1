@@ -8,36 +8,34 @@ import (
 
 //Set up some sample items
 type ItemHandler struct {
-	items map[int]structures.Item
+	items []structures.Item
 	e     *echo.Echo
 }
 
 func NewItemHandle() (*ItemHandler, *echo.Echo) {
 	var s = &ItemHandler{
-		items: map[int]structures.Item{
-			1: structures.Item{
-				Name:        "Taco",
-				Description: "A food item",
-				ID:          1,
-			},
-			2: structures.Item{
-				Name:        "Paper Plane",
-				Description: "A folded piece of paper, in the shape of a plane",
-				ID:          2,
-			},
-		},
-		e: echo.New(),
+		e:     echo.New(),
+		items: make([]structures.Item, 0),
 	}
+
+	var i1 = structures.Item{
+		Name:        "Taco",
+		Description: "A food item",
+	}
+	var i2 = structures.Item{
+		Name:        "Paper Plane",
+		Description: "A folded piece of paper, in the shape of a plane",
+	}
+
+	s.items = append(s.items, i1, i2)
 	return s, s.e
 }
 
-func (sh *ItemHandler) FindValidID() int {
-	i := len(sh.items) + 1
-	_, ok := sh.items[i]
-	for ok {
-		i++
-		_, ok = sh.items[i]
-	}
-	return i
+func (ih *ItemHandler) IsValidID(id int) bool {
 
+	return (id < 0) || (id > len(ih.items)-1)
+}
+
+func (ih *ItemHandler) Remove(i int) {
+	ih.items = append(ih.items[:i], ih.items[i+1:]...)
 }

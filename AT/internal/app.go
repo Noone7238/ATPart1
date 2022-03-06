@@ -1,16 +1,13 @@
 package network
 
 import (
-	"fmt"
-	"os"
+	config "gitstuff/AT/config"
+	"strings"
 )
 
 //Start starts the application
 func Start() error {
-	port := os.Getenv("MY_APP_PORT")
-	if port == "" {
-		port = "8080"
-	}
+	port := config.GetPortNum()
 
 	itmhandler, e := NewItemHandle()
 
@@ -21,6 +18,14 @@ func Start() error {
 	e.POST("/item", itmhandler.CreateItem)
 
 	//TODO below remove fmt
-	itmhandler.e.Logger.Print(fmt.Sprintf("Listening on port %s", port))
-	return itmhandler.e.Start(fmt.Sprintf("localhost:%s", port))
+	var sb strings.Builder
+	sb.WriteString("Listening on port ")
+	sb.WriteString(port)
+
+	var sb2 strings.Builder
+	sb2.WriteString("localhost:")
+	sb2.WriteString(port)
+
+	itmhandler.e.Logger.Print(sb.String())
+	return itmhandler.e.Start(sb2.String())
 }

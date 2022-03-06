@@ -8,7 +8,6 @@ import (
 type Item struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	ID          int    `json:"id"`
 }
 
 //echo validate, use custom interface
