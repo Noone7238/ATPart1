@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gitstuff/AT3/network"
+	network "gitstuff/AT/internal"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//TODO once things are moved, we'll need to come back and clean this all up.
 var userJSON = `{"name": "bobby","description": "a dude", "id": 3}`
 var expected = `"name":"Taco","description":"A food item"`
 var expected2 = `"name":"Paper Plane","description":"A folded piece of paper, in the shape of a plane"`
